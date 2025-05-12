@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --icon=Timekeeper_icon.ico Timekeeper.py

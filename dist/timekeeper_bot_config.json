@@ -1,0 +1,28 @@
+{
+    "guilds": {
+        "685105430539534348": {
+            "channel_id": 1332473530100744313,
+            "reminder_time": {
+                "type": "weekly",
+                "day": "Monday",
+                "time": "08:00"
+            },
+            "reminder_message": "<@1331780158461313054>  what time is it?",
+            "chatbot_prompt": "redsteel",
+            "last_sent_date": "2025-05-12",
+            "message_mode": "prompt"
+        },
+        "650375195734966282": {
+            "channel_id": 859826774464004107,
+            "reminder_time": {
+                "type": "weekly",
+                "day": "Wednesday",
+                "time": "19:00"
+            },
+            "reminder_message": ".",
+            "chatbot_prompt": "<@&1214281978879283210>  . One hour",
+            "message_mode": "static",
+            "last_sent_date": null
+        }
+    }
+}
