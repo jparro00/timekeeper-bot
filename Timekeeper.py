@@ -233,13 +233,18 @@ async def on_ready():
     # Automatically start reminders for all configured guilds
     config = load_config()
     for guild_id, guild_config in config.get("guilds", {}).items():
-        guild_id = int(guild_id)  # Convert guild ID back to an integer
-        if guild_config.get("channel_id") and guild_config.get("reminder_time") and guild_config.get(
-                "reminder_message"):
-            print(f"[DEBUG] Starting reminder for guild {guild_id}...")
-            start_guild_reminder(guild_id)  # Reuse the helper function
+        guild_id = int(guild_id)
+        if guild_config.get("enabled") and guild_config.get("channel_id") and guild_config.get("reminder_time"):
+            if guild_config.get("message_mode") == "prompt" and guild_config.get("chatbot_prompt"):
+                print(f"[DEBUG] Starting prompt reminder for guild {guild_id}...")
+                start_guild_reminder(guild_id)
+            elif guild_config.get("message_mode") == "static" and guild_config.get("reminder_message"):
+                print(f"[DEBUG] Starting static reminder for guild {guild_id}...")
+                start_guild_reminder(guild_id)
+            else:
+                print(f"[DEBUG] Skipping guild {guild_id}: Missing message for mode.")
         else:
-            print(f"[DEBUG] Skipping guild {guild_id}: Incomplete configuration.")
+            print(f"[DEBUG] Skipping guild {guild_id}: Incomplete configuration or disabled.")
 
     print("All reminders initialized.")
 
@@ -318,29 +323,28 @@ def start_guild_reminder(guild_id):
 @tree.command(name="start_reminder", description="Start the reminder task.")
 async def start_reminder(interaction: discord.Interaction):
     guild_id = interaction.guild_id
+    guild_config = load_guild_config(guild_id)
 
-    # Start the reminder task for the guild
+    guild_config["enabled"] = True
+    save_guild_config(guild_id, guild_config)
+
     start_guild_reminder(guild_id)
 
     await interaction.response.send_message("Reminder task started!", ephemeral=True)
-
 
 @tree.command(name="stop_reminder", description="Stop the reminder task.")
 async def stop_reminder(interaction: discord.Interaction):
     guild_id = interaction.guild_id
     guild_config = load_guild_config(guild_id)
-    # Reset last_sent_date in the guild's configuration
+
     guild_config["last_sent_date"] = None
+    guild_config["enabled"] = False
     save_guild_config(guild_id, guild_config)
 
-    # Stop the reminder task if it is running
     if guild_id in reminder_tasks and reminder_tasks[guild_id].is_running():
         reminder_tasks[guild_id].stop()
 
-        await interaction.response.send_message("Reminder task stopped, and last sent date has been reset!",
-                                                ephemeral=True)
-    else:
-        await interaction.response.send_message("No reminder task is currently running.", ephemeral=True)
+    await interaction.response.send_message("Reminder task stopped and state saved.", ephemeral=True)
 
 
 @tree.command(name="show_config", description="Show the current configuration of the reminder bot.")
